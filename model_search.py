@@ -23,42 +23,9 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import FunctionTransformer
 from nltk.tokenize import sent_tokenize
 import pickle 
-
-def subjectivity_classi(senti,subj): 
-    return classify_data
+from utils import *
 
 
-def preprocess_text(raw_text):
-    '''
-        Preprocessing function
-        PROGRAMMING TIP: Always a good idea to have a *master* preprocessing function that reads in a string and returns the
-        preprocessed string after applying a series of functions.
-    '''
-    #stemming and lowercasing (no stopword removal
-    words = [w for w in raw_text.lower().split()]
-    return (" ".join(words))
-
-def func_transformer(data): 
-    encoder = {'bathroom':1,'bedroom':2,'dining room':3 ,'gym':4,'home':5,'indoor':6,'kitchen':7,'laundry':8,'living room':9,'other':10,'outside':11,'porch':12,'laundry':13}
-    output =np.array([  encoder[e] for e in  data ] ).reshape(-1,1)
-    return output 
-
-def extract_polarity(data): 
-    dataset_list = []
-    sid = SentimentIntensityAnalyzer() 
-    for i,submission in enumerate(data): 
-        patient_list = list() 
-        neg,neu,pos = list(),list(),list()
-        for sent in sent_tokenize(submission):  
-            tmp = sid.polarity_scores(sent) 
-            neg.append(tmp['neg'])
-            neu.append(tmp['neu'])
-            pos.append(tmp['pos'])
-        dataset_list.append(pd.DataFrame(data={'neg':np.mean(neg),'neu':np.mean(neu),'pos':np.mean(pos)},index=[i])) 
-    output = pd.concat(dataset_list).to_numpy() 
-    return output 
-
-        
 
 
 
@@ -74,11 +41,11 @@ subj =  {'subj':1,'obj':2}
 senti = pickle.load(open('senti_analyzer.pkl','rb') )
 feat_extractor = lambda x: np.array([subj[senti.classify(e)] for e in x ]).reshape(-1,1)
 model_params = {} 
-model_params['tree']=   { 'tree__criterion':['gini','entropy'],'tree__max_depth':np.linspace(10,100,20,dtype=np.int)}
-model_params['forest'] ={'forest__n_estimators':np.linspace(10,50,50,dtype=np.int),'forest__max_depth':range(4,10)}
-model_params['naive'] = {'naive__fit_prior':[True,False],'naive__alpha':np.linspace(0,1,10)}
-model_params['svm'] = {'svm__C':np.linspace(0.2 , 2000,200)}
-model_params['logi'] = {'logi__C':np.linspace(0.2,200,200)}
+model_params['tree']=   { 'tree__criterion':['gini','entropy'],'tree__max_depth':np.linspace(10,30,5,dtype=np.int)}
+model_params['forest'] ={'forest__n_estimators':np.linspace(5,20,5,dtype=np.int),'forest__max_depth':range(4,8)}
+model_params['naive'] = {'naive__fit_prior':[True,False],'naive__alpha':np.linspace(0,1,5)}
+model_params['svm'] = {'svm__C':np.linspace(0.2 , 200,10)}
+model_params['logi'] = {'logi__C':np.linspace(0.2,200,10)}
 model_params['quadri'] = {'quadri__reg_param':np.linspace(0,1,20)}
 models = {'tree':DecisionTreeClassifier(),'forest':RandomForestClassifier(),'naive':MultinomialNB(),'svm':svm.SVC(),'logi':LogisticRegression(),'quadri':QuadraticDiscriminantAnalysis()}
 for e in model_params.keys():
